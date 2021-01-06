@@ -1,0 +1,6 @@
+*.db
+*.env
+*.xml
+*.iml
+.idea
+*.pyc
