@@ -10,6 +10,7 @@ from discord.ext import tasks
 
 db = sqlite3.connect('wt_news.db')
 
+
 class WarThunder:
     def __init__(self, title, desc, url, img_url, date):
         self.title = title
@@ -17,6 +18,7 @@ class WarThunder:
         self.url = url
         self.img_url = img_url
         self.date = date
+
 
 class News(commands.Cog):
     def __init__(self, bot):
@@ -37,9 +39,9 @@ class News(commands.Cog):
                         hash_val = hashlib.md5(f'{wt1.url}'.encode('utf-8')).hexdigest()
                         cursor.execute(f'SELECT hash FROM warthunder WHERE hash="{str(hash_val)}"')
                         result = cursor.fetchone()
-                        if not result:   #checking if such a hash value exists in db
+                        if not result:   # checking if such a hash value exists in db
                             cursor.execute(f'INSERT INTO warthunder VALUES("{str(hash_val)}")')
-                            db.commit() 
+                            db.commit()
                             embed = discord.Embed(title=wt1.title, url=wt1.url, description=wt1.desc)
                             embed.set_thumbnail(url=wt1.img_url)
                             embed.set_footer(text=wt1.date)
@@ -49,20 +51,22 @@ class News(commands.Cog):
                         hash_val = hashlib.md5(f'{wt2.url}'.encode('utf-8')).hexdigest()
                         cursor.execute(f'SELECT hash FROM warthunder WHERE hash="{str(hash_val)}"')
                         result = cursor.fetchone()
-                        if not result: 
+                        if not result:
                             cursor.execute(f'INSERT INTO warthunder VALUES("{str(hash_val)}")')
-                            db.commit() 
+                            db.commit()
                             embed = discord.Embed(title=wt2.title, url=wt2.url, description=wt2.desc)
                             embed.set_thumbnail(url=wt2.img_url)
                             embed.set_footer(text=wt2.date)
                             await news_channel.send(embed=embed)
-    
+
+
 def scrape_news():
     URL = 'https://warthunder.com/en/news'
     page = requests.get(URL)
     soup = BeautifulSoup(page.content, 'html.parser')
     results = soup.find_all('div', {'class': 'showcase__item widget'})
     return results
+
 
 def scrape_patch():
     URL = 'https://warthunder.com/en/game/changelog/'
@@ -71,18 +75,20 @@ def scrape_patch():
     results = soup.find_all('div', {'class': 'news-item'})
     return results
 
+
 def news_find(data):
     title = data.find('div', {'class': 'widget__title'})
     desc = data.find('p', {'class': 'widget__comment'})
     url = data.find('a', {'class': 'widget__link'})
     img_url = data.find('img', {'class': 'widget__poster-media js-lazy-load'})
     date = data.find('li', {'class': 'widget-meta__item widget-meta__item--right'})
-    return WarThunder(title.text.strip(), 
-                        desc.text.strip(), 
-                        'https://warthunder.com' + urllib.parse.quote(url.attrs['href']), 
-                        'https:' + urllib.parse.quote(img_url.attrs['data-src']),
-                        date.text.strip()
+    return WarThunder(title.text.strip(),
+                      desc.text.strip(),
+                      'https://warthunder.com' + urllib.parse.quote(url.attrs['href']),
+                      'https:' + urllib.parse.quote(img_url.attrs['data-src']),
+                      date.text.strip()
                       )
+
 
 def patch_find(data):
     title_url = data.find('a', {'class': 'news-item__title'})
@@ -95,6 +101,7 @@ def patch_find(data):
                       'https:' + urllib.parse.quote(img_url.attrs['src']),
                       date.text.strip()
                       )
+
 
 def setup(bot):
     bot.add_cog(News(bot))
